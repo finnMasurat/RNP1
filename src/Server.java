@@ -20,24 +20,54 @@ public class Server {
             BufferedReader serverInput = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 
             // Nachricht vom Server an den Client
-            DataOutputStream clientOutput = new DataOutputStream(connectionSocket.getOutputStream());
+            DataOutputStream serverOutput = new DataOutputStream(connectionSocket.getOutputStream());
 
             String inputLine;
+            String outputLine = "";
 
-            System.out.println("Read from Client: ");
-            while((inputLine = serverInput.readLine()) != null ) {
-                System.out.println(inputLine);
+            while(true) {
+                inputLine = serverInput.readLine();
 
-                String[] inputArray = inputLine.split(" ");
+                //System.out.println("FROM CLIENT: " + inputLine);
 
-                switch (inputArray[0]) {
-                    case "BYE":
-                        System.out.println("OK BYE");
-                        connectionSocket.close();
-                        break;
+                if (inputLine != null) {
+                    String[] inputArray = inputLine.split(" ");
 
+                    switch (inputArray[0]) {
+                        case "LOWERCASE":
+                        case "UPPERCASE":
+                            if (inputArray.length == 1) {
+                                System.out.println("ERROR NO EMPTY STRING ALLOWED");
+                            }
+                            for (int i = 1; i < inputArray.length; i++) {
+                                if (inputArray[0].equals("LOWERCASE")) {
+                                    outputLine += " " + inputArray[i].toLowerCase();
+                                } else {
+                                    outputLine += " " + inputArray[i].toUpperCase();
+                                }
+                            }
+
+                            System.out.println("Send to client:" + outputLine);
+                            serverOutput.writeBytes("OK" + outputLine + "\n");
+
+                            break;
+                        case "REVERSE":
+                            if (inputArray.length == 1) {
+                                System.out.println("ERROR NO EMPTY STRING ALLOWED");
+                            }
+                            for (int i = inputArray.length - 1; i > 0; i --) {
+                                outputLine += " " + new StringBuilder(inputArray[i]).reverse().toString();
+                            }
+                            System.out.println("Send to client: OK" + outputLine);
+                            serverOutput.writeBytes(outputLine + "\n");
+
+                            break;
+                        case "BYE":
+                            System.out.println("OK BYE");
+                            connectionSocket.close();
+                            break;
+                    }
                 }
-
             }
 
 
