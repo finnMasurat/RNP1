@@ -12,7 +12,6 @@ public class Client {
         try {
             Socket clientSocket = new Socket("127.0.0.1",6432);
 
-
             // Nachricht vom Benutzer an den Client
             BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
 
@@ -27,10 +26,11 @@ public class Client {
             String modified;
 
             clientOutput.writeBytes(eingabe + '\n');
+            System.out.println("Sent to Server");
             modified = clientInput.readLine();
             System.out.println("FROM SERVER:" + modified);
-            clientSocket.close();
 
+            clientSocket.close();
 
         } catch (IOException e) {
             e.printStackTrace();

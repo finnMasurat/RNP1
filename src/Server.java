@@ -11,25 +11,10 @@ public class Server {
 
         try {
             ServerSocket welcomeSocket = new ServerSocket(6432);
-            
-//            Socket connectionSocket = new Socket();
-//            connectionSocket = welcomeSocket.accept();
-//
-//            System.out.println("Connected..");
-//
-//            // Nachricht vom Client an den Server
-//            BufferedReader serverInput = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-//
-//            // Nachricht vom Server an den Client
-//            DataOutputStream serverOutput = new DataOutputStream(connectionSocket.getOutputStream());
-//
-//            String inputLine;
-//            String outputLine = "";
 
             while (true) {
 
-                Socket connectionSocket = new Socket();
-                connectionSocket = welcomeSocket.accept();
+                Socket connectionSocket = welcomeSocket.accept();
 
                 System.out.println("Connected..");
 
@@ -50,7 +35,7 @@ public class Server {
                 if (inputLine != null) {
                     byte[] utf8Bytes = inputLine.getBytes("UTF-8");
 
-                    // Die Vorgegebene Maximallänge des Strings prüfen
+                    // Die Vorgegebene UTF-8 Maximallänge des Strings prüfen
                     if (utf8Bytes.length < 255) {
 
                         String[] inputArray = inputLine.split(" ");
@@ -59,36 +44,39 @@ public class Server {
                             case "LOWERCASE":
                             case "UPPERCASE":
 
-                                if (inputArray.length == 1) {
-                                    System.out.println("ERROR NO EMPTY STRING ALLOWED");
-                                }
-                                for (int i = 1; i < inputArray.length; i++) {
-                                    if (inputArray[0].equals("LOWERCASE")) {
-                                        outputLine += " " + inputArray[i].toLowerCase();
-                                    } else {
-                                        outputLine += " " + inputArray[i].toUpperCase();
+                                if (inputArray.length > 1) {
+                                    for (int i = 1; i < inputArray.length; i++) {
+                                        if (inputArray[0].equals("LOWERCASE")) {
+                                            outputLine += " " + inputArray[i].toLowerCase();
+                                        } else {
+                                            outputLine += " " + inputArray[i].toUpperCase();
+                                        }
                                     }
+                                    serverOutput.writeBytes("OK" + outputLine + "\n");
+
+                                } else {
+                                    serverOutput.writeBytes("ERROR NO EMPTY STRING ALLOWED" + "\n");
                                 }
-
-                                System.out.println("Send to client:" + outputLine);
-                                serverOutput.writeBytes("OK" + outputLine + "\n");
-
                                 break;
+
                             case "REVERSE":
-                                if (inputArray.length == 1) {
-                                    System.out.println("ERROR NO EMPTY STRING ALLOWED");
+                                if (inputArray.length > 1) {
+                                    for (int i = inputArray.length - 1; i > 0; i--) {
+                                        outputLine += " " + new StringBuilder(inputArray[i]).reverse().toString();
+                                    }
+                                    serverOutput.writeBytes("OK" + outputLine + "\n");
+                                } else {
+                                    serverOutput.writeBytes("ERROR NO EMPTY STRING ALLOWED" + "\n");
                                 }
-                                for (int i = inputArray.length - 1; i > 0; i--) {
-                                    outputLine += " " + new StringBuilder(inputArray[i]).reverse().toString();
-                                }
-                                System.out.println("Send to client: OK" + outputLine);
-                                serverOutput.writeBytes(outputLine + "\n");
-
                                 break;
+
                             case "BYE":
-                                System.out.println("OK BYE");
+                                serverOutput.writeBytes("OK BYE" + "\n");
                                 connectionSocket.close();
                                 break;
+
+                            default:
+                                serverOutput.writeBytes("ERROR UNKNOWN COMMAND" + "\n");
                         }
                     } else {
                         serverOutput.writeBytes("ERROR STRING TOO LONG");
