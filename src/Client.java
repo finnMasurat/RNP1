@@ -28,7 +28,7 @@ public class Client {
 
             clientOutput.writeBytes(eingabe + '\n');
             modified = clientInput.readLine();
-            System.out.println("FROM SERVER: " + modified);
+            System.out.println("FROM SERVER:" + modified);
             clientSocket.close();
 
 

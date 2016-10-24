@@ -11,65 +11,90 @@ public class Server {
 
         try {
             ServerSocket welcomeSocket = new ServerSocket(6432);
-            Socket connectionSocket = new Socket();
-            connectionSocket = welcomeSocket.accept();
+            
+//            Socket connectionSocket = new Socket();
+//            connectionSocket = welcomeSocket.accept();
+//
+//            System.out.println("Connected..");
+//
+//            // Nachricht vom Client an den Server
+//            BufferedReader serverInput = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+//
+//            // Nachricht vom Server an den Client
+//            DataOutputStream serverOutput = new DataOutputStream(connectionSocket.getOutputStream());
+//
+//            String inputLine;
+//            String outputLine = "";
 
-            System.out.println("Connected..");
+            while (true) {
 
-            // Nachricht vom Client an den Server
-            BufferedReader serverInput = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+                Socket connectionSocket = new Socket();
+                connectionSocket = welcomeSocket.accept();
 
-            // Nachricht vom Server an den Client
-            DataOutputStream serverOutput = new DataOutputStream(connectionSocket.getOutputStream());
+                System.out.println("Connected..");
 
-            String inputLine;
-            String outputLine = "";
+                // Nachricht vom Client an den Server
+                BufferedReader serverInput = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 
-            while(true) {
+                // Nachricht vom Server an den Client
+                DataOutputStream serverOutput = new DataOutputStream(connectionSocket.getOutputStream());
+
+                String inputLine;
+                String outputLine = "";
+
                 inputLine = serverInput.readLine();
 
                 //System.out.println("FROM CLIENT: " + inputLine);
 
+                // Auf das Ende der Nachricht prüfen
                 if (inputLine != null) {
-                    String[] inputArray = inputLine.split(" ");
+                    byte[] utf8Bytes = inputLine.getBytes("UTF-8");
 
-                    switch (inputArray[0]) {
-                        case "LOWERCASE":
-                        case "UPPERCASE":
-                            if (inputArray.length == 1) {
-                                System.out.println("ERROR NO EMPTY STRING ALLOWED");
-                            }
-                            for (int i = 1; i < inputArray.length; i++) {
-                                if (inputArray[0].equals("LOWERCASE")) {
-                                    outputLine += " " + inputArray[i].toLowerCase();
-                                } else {
-                                    outputLine += " " + inputArray[i].toUpperCase();
+                    // Die Vorgegebene Maximallänge des Strings prüfen
+                    if (utf8Bytes.length < 255) {
+
+                        String[] inputArray = inputLine.split(" ");
+
+                        switch (inputArray[0]) {
+                            case "LOWERCASE":
+                            case "UPPERCASE":
+
+                                if (inputArray.length == 1) {
+                                    System.out.println("ERROR NO EMPTY STRING ALLOWED");
                                 }
-                            }
+                                for (int i = 1; i < inputArray.length; i++) {
+                                    if (inputArray[0].equals("LOWERCASE")) {
+                                        outputLine += " " + inputArray[i].toLowerCase();
+                                    } else {
+                                        outputLine += " " + inputArray[i].toUpperCase();
+                                    }
+                                }
 
-                            System.out.println("Send to client:" + outputLine);
-                            serverOutput.writeBytes("OK" + outputLine + "\n");
+                                System.out.println("Send to client:" + outputLine);
+                                serverOutput.writeBytes("OK" + outputLine + "\n");
 
-                            break;
-                        case "REVERSE":
-                            if (inputArray.length == 1) {
-                                System.out.println("ERROR NO EMPTY STRING ALLOWED");
-                            }
-                            for (int i = inputArray.length - 1; i > 0; i --) {
-                                outputLine += " " + new StringBuilder(inputArray[i]).reverse().toString();
-                            }
-                            System.out.println("Send to client: OK" + outputLine);
-                            serverOutput.writeBytes(outputLine + "\n");
+                                break;
+                            case "REVERSE":
+                                if (inputArray.length == 1) {
+                                    System.out.println("ERROR NO EMPTY STRING ALLOWED");
+                                }
+                                for (int i = inputArray.length - 1; i > 0; i--) {
+                                    outputLine += " " + new StringBuilder(inputArray[i]).reverse().toString();
+                                }
+                                System.out.println("Send to client: OK" + outputLine);
+                                serverOutput.writeBytes(outputLine + "\n");
 
-                            break;
-                        case "BYE":
-                            System.out.println("OK BYE");
-                            connectionSocket.close();
-                            break;
+                                break;
+                            case "BYE":
+                                System.out.println("OK BYE");
+                                connectionSocket.close();
+                                break;
+                        }
+                    } else {
+                        serverOutput.writeBytes("ERROR STRING TOO LONG");
                     }
                 }
             }
-
 
 
         } catch (IOException e) {
